@@ -26,6 +26,10 @@ function getRandom(arr: string[]) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  return arr.slice().sort(() => Math.random() - 0.5);
+}
+
 const ExamDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -40,11 +44,26 @@ const ExamDetail: React.FC = () => {
   const [answers, setAnswers] = useState<(string | null)[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+  const [optionsState, setOptionsState] = useState<string[][]>([]);
 
   useEffect(() => {
     fetchExam();
     // eslint-disable-next-line
   }, [id]);
+
+  useEffect(() => {
+    if (questions.length) {
+      const allOptions = questions.map((q, idx) => {
+        const correctAnswer = q.title_en;
+        const otherQuestions = questions.filter(qq => qq.id !== q.id);
+        let wrongAnswers = otherQuestions.map(qq => qq.title_en).filter(Boolean);
+        wrongAnswers = wrongAnswers.filter(ans => ans !== correctAnswer);
+        wrongAnswers = shuffle(wrongAnswers).slice(0, 3);
+        return shuffle([correctAnswer, ...wrongAnswers]);
+      });
+      setOptionsState(allOptions);
+    }
+  }, [questions]);
 
   const fetchExam = async () => {
     setLoading(true);
@@ -76,8 +95,12 @@ const ExamDetail: React.FC = () => {
   const list: UserExamListItem[] = JSON.parse(exam.list || '[]');
   const q = questions[current];
   const userAnswer = list[current]?.answer;
-  const correctAnswer = q.title_en || q.title_vi;
-  const options = [q.title_en, q.title_vi, q.description_en, q.description_vi].filter(Boolean).slice(0, 4);
+  const correctAnswer = q.title_en;
+  const otherQuestions = questions.filter(qq => qq.id !== q.id);
+  let wrongAnswers = otherQuestions.map(qq => qq.title_en).filter(Boolean);
+  wrongAnswers = wrongAnswers.filter(ans => ans !== correctAnswer);
+  wrongAnswers = shuffle(wrongAnswers).slice(0, 3);
+  const options = optionsState[current] || [];
 
   const handleSelect = (ans: string) => {
     if (showResult || submitted) return;

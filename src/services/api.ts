@@ -246,4 +246,31 @@ export const examQuestionsAPI = {
   },
 };
 
+// Upload API
+export const uploadAPI = {
+  uploadSingle: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await api.post('/upload/single', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+  
+  uploadPdf: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await api.post('/upload/pdf/single', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+};
+
 export default api; 

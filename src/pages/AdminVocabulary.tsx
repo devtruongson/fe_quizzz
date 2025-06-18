@@ -12,15 +12,17 @@ import {
   Popconfirm,
   message,
   Collapse,
-  Statistic
+  Statistic,
+  Upload
 } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-  FileTextOutlined
+  FileTextOutlined,
+  UploadOutlined
 } from '@ant-design/icons';
-import { topicsAPI, vocabulairesAPI, vocabulaireQuestionsAPI } from '../services/api';
+import { topicsAPI, vocabulairesAPI, vocabulaireQuestionsAPI, uploadAPI } from '../services/api';
 import type { Topic, Vocabulaire, VocabulaireQuestion } from '../types';
 
 const { Title } = Typography;
@@ -34,6 +36,12 @@ const AdminVocabulary: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [currentTopicId, setCurrentTopicId] = useState<number | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<{
+    audio_vi?: string;
+    audio_en?: string;
+    image?: string;
+  }>({});
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -61,6 +69,7 @@ const AdminVocabulary: React.FC = () => {
   const handleAdd = (topicId: number) => {
     setEditingItem(null);
     setCurrentTopicId(topicId);
+    setUploadedFiles({});
     form.resetFields();
     setModalVisible(true);
   };
@@ -68,6 +77,11 @@ const AdminVocabulary: React.FC = () => {
   const handleEdit = (record: VocabulaireQuestion, topicId: number) => {
     setEditingItem(record);
     setCurrentTopicId(topicId);
+    setUploadedFiles({
+      audio_vi: record.audio_vi,
+      audio_en: record.audio_en,
+      image: record.image
+    });
     form.setFieldsValue(record);
     setModalVisible(true);
   };
@@ -88,7 +102,11 @@ const AdminVocabulary: React.FC = () => {
         await vocabulaireQuestionsAPI.update(editingItem.id, values);
         message.success('Cập nhật từ vựng thành công');
       } else {
-        // Tìm vocabulaire theo topicId, nếu chưa có thì tạo mới
+        if (currentTopicId === null) {
+          message.error('Không tìm thấy chủ đề');
+          return;
+        }
+        
         let vocabulaire = vocabulaires.find(v => v.topicId === currentTopicId);
         if (!vocabulaire) {
           vocabulaire = await vocabulairesAPI.create({ topicId: currentTopicId });
@@ -105,6 +123,58 @@ const AdminVocabulary: React.FC = () => {
       message.error('Lỗi khi lưu dữ liệu');
     }
   };
+
+  // Hàm xử lý upload file
+  const handleFileUpload = async (file: File, fieldName: string) => {
+    try {
+      setUploading(true);
+      const fileUrl = await uploadAPI.uploadSingle(file);
+      form.setFieldsValue({ [fieldName]: fileUrl });
+      setUploadedFiles(prev => ({ ...prev, [fieldName]: fileUrl }));
+      message.success('Upload file thành công');
+    } catch (error) {
+      message.error('Lỗi khi upload file');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Custom upload props cho audio và image
+  const uploadProps = (fieldName: string) => ({
+    beforeUpload: (file: File) => {
+      // Validation file size (max 10MB)
+      const isLt10M = file.size / 1024 / 1024 < 10;
+      if (!isLt10M) {
+        message.error('File phải nhỏ hơn 10MB!');
+        return false;
+      }
+
+      // Validation file type
+      const isAudio = fieldName.includes('audio');
+      const isImage = fieldName.includes('image');
+      
+      if (isAudio) {
+        const isValidAudio = ['audio/mp3', 'audio/wav', 'audio/m4a', 'audio/mpeg'].includes(file.type);
+        if (!isValidAudio) {
+          message.error('Chỉ chấp nhận file audio (MP3, WAV, M4A)!');
+          return false;
+        }
+      }
+      
+      if (isImage) {
+        const isValidImage = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type);
+        if (!isValidImage) {
+          message.error('Chỉ chấp nhận file hình ảnh (JPG, PNG, GIF, WEBP)!');
+          return false;
+        }
+      }
+
+      handleFileUpload(file, fieldName);
+      return false; // Ngăn không cho upload tự động
+    },
+    showUploadList: false,
+    accept: fieldName.includes('audio') ? '.mp3,.wav,.m4a' : '.jpg,.jpeg,.png,.gif,.webp',
+  });
 
   // Lấy danh sách từ vựng theo topicId
   const getVocabularyByTopic = (topicId: number) => {
@@ -267,19 +337,65 @@ const AdminVocabulary: React.FC = () => {
             name="audio_vi"
             label="Audio tiếng Việt"
           >
-            <Input placeholder="URL audio tiếng Việt" type='file' />
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Input placeholder="URL audio tiếng Việt" />
+              <Upload {...uploadProps('audio_vi')}>
+                <Button icon={<UploadOutlined />} loading={uploading}>
+                  Chọn file audio tiếng Việt
+                </Button>
+              </Upload>
+              {uploadedFiles.audio_vi && (
+                <div>
+                  <audio controls style={{ width: '100%' }}>
+                    <source src={uploadedFiles.audio_vi} type="audio/mpeg" />
+                    Trình duyệt không hỗ trợ audio.
+                  </audio>
+                </div>
+              )}
+            </Space>
           </Form.Item>
           <Form.Item
             name="audio_en"
             label="Audio tiếng Anh"
           >
-            <Input placeholder="URL audio tiếng Anh" type='file' />
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Input placeholder="URL audio tiếng Anh" />
+              <Upload {...uploadProps('audio_en')}>
+                <Button icon={<UploadOutlined />} loading={uploading}>
+                  Chọn file audio tiếng Anh
+                </Button>
+              </Upload>
+              {uploadedFiles.audio_en && (
+                <div>
+                  <audio controls style={{ width: '100%' }}>
+                    <source src={uploadedFiles.audio_en} type="audio/mpeg" />
+                    Trình duyệt không hỗ trợ audio.
+                  </audio>
+                </div>
+              )}
+            </Space>
           </Form.Item>
           <Form.Item
             name="image"
             label="Hình ảnh"
           >
-            <Input placeholder="URL hình ảnh" type='file' />
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Input placeholder="URL hình ảnh" />
+              <Upload {...uploadProps('image')}>
+                <Button icon={<UploadOutlined />} loading={uploading}>
+                  Chọn file hình ảnh
+                </Button>
+              </Upload>
+              {uploadedFiles.image && (
+                <div>
+                  <img 
+                    src={uploadedFiles.image} 
+                    alt="Preview" 
+                    style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain' }} 
+                  />
+                </div>
+              )}
+            </Space>
           </Form.Item>
           <Form.Item className="mb-0">
             <Space>

@@ -1,7 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Typography, Spin, message, Progress, Modal } from 'antd';
-import { LeftOutlined, RightOutlined, SoundOutlined, TrophyOutlined } from '@ant-design/icons';
+import { Button, Typography, Spin, message, Progress, Modal, Slider } from 'antd';
+import { 
+  LeftOutlined, 
+  RightOutlined, 
+  SoundOutlined, 
+  TrophyOutlined,
+  PlayCircleOutlined,
+  PauseCircleOutlined,
+  StepBackwardOutlined,
+  StepForwardOutlined
+} from '@ant-design/icons';
 import { topicsAPI, vocabulairesAPI, vocabulaireQuestionsAPI, userVocabulairesAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import type { Topic, Vocabulaire, VocabulaireQuestion, UserVocabulaire } from '../types';
@@ -26,6 +35,14 @@ const TopicFlashcard: React.FC = () => {
   const [currentProgress, setCurrentProgress] = useState<UserVocabulaire | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isCallAPI, setIsCallAPI] = useState(true);
+  
+  // Audio controls state
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
+  const [currentAudioType, setCurrentAudioType] = useState<'vi' | 'en' | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -37,6 +54,48 @@ const TopicFlashcard: React.FC = () => {
       loadCurrentProgress();
     }
   }, [user, topicId, cards]);
+
+  // Audio management effect
+  useEffect(() => {
+    if (audioRef.current) {
+      const audio = audioRef.current;
+      
+      const handleTimeUpdate = () => {
+        setCurrentTime(audio.currentTime);
+      };
+      
+      const handleLoadedMetadata = () => {
+        setDuration(audio.duration);
+      };
+      
+      const handleEnded = () => {
+        setIsPlaying(false);
+        setCurrentTime(0);
+      };
+      
+      const handlePlay = () => {
+        setIsPlaying(true);
+      };
+      
+      const handlePause = () => {
+        setIsPlaying(false);
+      };
+      
+      audio.addEventListener('timeupdate', handleTimeUpdate);
+      audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.addEventListener('ended', handleEnded);
+      audio.addEventListener('play', handlePlay);
+      audio.addEventListener('pause', handlePause);
+      
+      return () => {
+        audio.removeEventListener('timeupdate', handleTimeUpdate);
+        audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        audio.removeEventListener('ended', handleEnded);
+        audio.removeEventListener('play', handlePlay);
+        audio.removeEventListener('pause', handlePause);
+      };
+    }
+  }, [audioRef.current]);
 
   const loadCurrentProgress = async () => {
     if (!user || cards.length === 0) return;
@@ -109,6 +168,12 @@ const TopicFlashcard: React.FC = () => {
   };
 
   const handleFlip = () => {
+    // Tắt audio đang phát khi flip
+    if (audioRef.current && isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+    
     setFlipped(f => !f);
     saveProgress();
     if (!studiedCards.has(cards[current].id)) {
@@ -118,20 +183,82 @@ const TopicFlashcard: React.FC = () => {
   };
 
   const handleNext = () => {
+    // Tắt audio đang phát khi chuyển card
+    if (audioRef.current && isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+    
     setCurrent(c => (c + 1 < cards.length ? c + 1 : 0));
     setFlipped(false);
   };
 
   const handlePrev = () => {
+    // Tắt audio đang phát khi chuyển card
+    if (audioRef.current && isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+    
     setCurrent(c => (c - 1 >= 0 ? c - 1 : cards.length - 1));
     setFlipped(false);
   };
 
-  const handleAudio = (url?: string) => {
-    if (url) {
-      const audio = new Audio(url);
-      audio.play();
+  const handleAudio = (url?: string, audioType: 'vi' | 'en' = 'en') => {
+    if (!url) return;
+    
+    if (audioRef.current) {
+      // Nếu đang phát cùng file và cùng loại, toggle play/pause
+      if (currentAudioUrl === url && currentAudioType === audioType) {
+        if (isPlaying) {
+          audioRef.current.pause();
+        } else {
+          audioRef.current.play();
+        }
+      } else {
+        // Nếu là file mới hoặc loại khác, load và phát
+        audioRef.current.src = url;
+        audioRef.current.load();
+        audioRef.current.play();
+        setCurrentAudioUrl(url);
+        setCurrentAudioType(audioType);
+      }
     }
+  };
+
+  const handlePlayPause = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+    }
+  };
+
+  const handleSeek = (value: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = value;
+      setCurrentTime(value);
+    }
+  };
+
+  const handleRewind = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 5);
+    }
+  };
+
+  const handleForward = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 5);
+    }
+  };
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const saveProgress = async () => {
@@ -360,6 +487,129 @@ const TopicFlashcard: React.FC = () => {
     },
   };
 
+  // Audio Player Component
+  const AudioPlayer = ({ audioUrl, language, audioType }: { audioUrl?: string; language: string; audioType: 'vi' | 'en' }) => {
+    if (!audioUrl) return null;
+
+    const isCurrentAudio = currentAudioUrl === audioUrl && currentAudioType === audioType;
+    const isCurrentPlaying = isCurrentAudio && isPlaying;
+
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '0.5rem',
+        marginBottom: '1rem',
+        padding: '0.75rem',
+        background: 'rgba(255,255,255,0.1)',
+        borderRadius: '12px',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255,255,255,0.2)',
+        minWidth: '280px',
+        backgroundColor: audioType === "vi"? 'rgba(255,255,255,0.1)': "#666",
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          marginBottom: '0.5rem'
+        }}>
+          <SoundOutlined style={{ color: isCurrentAudio ? '#10b981' : '#ffffff' }} />
+          <Text style={{ 
+            color: '#ffffff', 
+            fontSize: '0.9rem', 
+            fontWeight: '500' 
+          }}>
+            Audio {language}
+          </Text>
+        </div>
+        
+        {/* Audio Controls */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          width: '100%'
+        }}>
+          <Button
+            icon={<StepBackwardOutlined />}
+            size="small"
+            shape="circle"
+            onClick={(e) => { e.stopPropagation(); handleRewind(); }}
+            disabled={!isCurrentAudio}
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              border: 'none',
+              color: '#ffffff'
+            }}
+          />
+          
+          <Button
+            icon={isCurrentPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+            size="small"
+            shape="circle"
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              if (isCurrentAudio) {
+                handlePlayPause();
+              } else {
+                handleAudio(audioUrl, audioType);
+              }
+            }}
+            style={{
+              background: isCurrentAudio ? '#10b981' : 'rgba(255,255,255,0.2)',
+              border: 'none',
+              color: '#ffffff',
+              fontSize: '1.2rem'
+            }}
+          />
+          
+          <Button
+            icon={<StepForwardOutlined />}
+            size="small"
+            shape="circle"
+            onClick={(e) => { e.stopPropagation(); handleForward(); }}
+            disabled={!isCurrentAudio}
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              border: 'none',
+              color: '#ffffff'
+            }}
+          />
+        </div>
+        
+        {/* Progress Slider */}
+        {isCurrentAudio && duration > 0 && (
+          <div style={{ width: '100%', padding: '0 0.5rem' }}>
+            <Slider
+              min={0}
+              max={duration}
+              value={currentTime}
+              onChange={handleSeek}
+              tooltip={{
+                formatter: (value) => formatTime(value || 0)
+              }}
+              style={{
+                margin: '0.5rem 0'
+              }}
+              trackStyle={{ backgroundColor: '#10b981' }}
+              handleStyle={{ borderColor: '#10b981' }}
+            />
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: '0.75rem',
+              color: '#e2e8f0'
+            }}>
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration)}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Nếu đã hoàn thành 100%, hiển thị màn hình complete
   if (isCompleted) {
@@ -520,33 +770,19 @@ const TopicFlashcard: React.FC = () => {
               <img src={card.image} alt="Vocabulary" style={cardStyles.image} />
             )}
             <h2 style={{ ...cardStyles.cardTitle, color: '#1e293b' }}>{card.title_en}</h2>
-            {card.audio_en && (
-              <Button 
-                icon={<SoundOutlined />} 
-                shape="circle" 
-                onClick={(e) => { e.stopPropagation(); handleAudio(card.audio_en); }}
-                style={{ marginBottom: '0.5rem' }}
-              />
-            )}
+            <AudioPlayer audioUrl={card.audio_en} language="Anh" audioType="en" />
             <p style={{ ...cardStyles.cardDescription, color: '#64748b' }}>
               {card.description_en}
             </p>
-            <span style={{ ...cardStyles.hintText, color: '#6366f1' }}>
+            {/* <span style={{ ...cardStyles.hintText, color: '#6366f1' }}>
               Click để xem tiếng Việt
-            </span>
+            </span> */}
           </div>
           
           {/* Back Side - Vietnamese */}
           <div style={{ ...cardStyles.cardSide, ...cardStyles.backSide }}>
             <h2 style={{ ...cardStyles.cardTitle, color: '#ffffff' }}>{card.title_vi}</h2>
-            {card.audio_vi && (
-              <Button 
-                icon={<SoundOutlined />} 
-                shape="circle" 
-                onClick={(e) => { e.stopPropagation(); handleAudio(card.audio_vi); }}
-                style={{ marginBottom: '0.5rem' }}
-              />
-            )}
+            <AudioPlayer audioUrl={card.audio_vi} language="Việt" audioType="vi" />
             <p style={{ ...cardStyles.cardDescription, color: '#e2e8f0' }}>
               {card.description_vi}
             </p>
@@ -617,6 +853,16 @@ const TopicFlashcard: React.FC = () => {
           </Text>
         </div>
       </Modal>
+      
+      {/* Hidden Audio Element */}
+      <audio
+        ref={audioRef}
+        style={{ display: 'none' }}
+        onError={(e) => {
+          console.error('Audio error:', e);
+          message.error('Lỗi khi phát audio');
+        }}
+      />
     </div>
   );
 };
