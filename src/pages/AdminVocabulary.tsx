@@ -267,19 +267,19 @@ const AdminVocabulary: React.FC = () => {
             name="audio_vi"
             label="Audio tiếng Việt"
           >
-            <Input placeholder="URL audio tiếng Việt" />
+            <Input placeholder="URL audio tiếng Việt" type='file' />
           </Form.Item>
           <Form.Item
             name="audio_en"
             label="Audio tiếng Anh"
           >
-            <Input placeholder="URL audio tiếng Anh" />
+            <Input placeholder="URL audio tiếng Anh" type='file' />
           </Form.Item>
           <Form.Item
             name="image"
             label="Hình ảnh"
           >
-            <Input placeholder="URL hình ảnh" />
+            <Input placeholder="URL hình ảnh" type='file' />
           </Form.Item>
           <Form.Item className="mb-0">
             <Space>

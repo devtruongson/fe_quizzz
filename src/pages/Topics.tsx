@@ -300,16 +300,16 @@ const Topics: React.FC = () => {
                         >
                           Ôn tập từ vựng
                         </Button>
-                        <Button
+                      </div>
+                      <Button
                           size="small"
                           type="primary"
                           loading={creatingExamId === topic.id}
-                          className="w-full h-[30px]"
+                          className="w-full h-[30px] mt-[10px]"
                           onClick={(e) => handleCreateExam(topic, e)}
                         >
                           Kiểm tra
                         </Button>
-                      </div>
                     </div>
                   </Card>
                 </Col>
