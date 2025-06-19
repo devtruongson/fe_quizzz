@@ -221,7 +221,7 @@ const AdminVocabulary: React.FC = () => {
       key: 'action',
       width: 150,
       render: (_: any, record: VocabulaireQuestion) => (
-        <Space size="small">
+        <Space wrap>
           <Button
             type="link"
             size="small"

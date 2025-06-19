@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, Form, Input, Button, Typography, Avatar, Divider, Row, Col, Statistic } from 'antd';
 import { UserOutlined, MailOutlined, LockOutlined, TrophyOutlined, BookOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
+import { usersAPI } from '../services/api';
 
 const { Title, Text } = Typography;
 
@@ -13,8 +14,16 @@ const Profile: React.FC = () => {
   const onFinish = async (values: any) => {
     setLoading(true);
     try {
-      // TODO: Implement profile update
-      console.log('Profile update:', values);
+      // Chỉ gửi password mới nếu có
+      const payload: any = {};
+      if (values.newPassword) {
+        payload.password = values.newPassword;
+      }
+      if (user && Object.keys(payload).length > 0) {
+        await usersAPI.update(user.id, payload);
+        // Có thể thêm message thành công ở đây
+      }
+      // Nếu không có trường nào để cập nhật, không gọi API
     } catch (error) {
       console.error('Error updating profile:', error);
     } finally {

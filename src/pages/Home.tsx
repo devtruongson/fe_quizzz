@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Card, Statistic, Button, Typography, Progress, Spin } from 'antd';
+import { Row, Col, Card, Statistic, Button, Typography, Progress, Spin, Avatar } from 'antd';
 import { 
   BookOutlined, 
   TrophyOutlined, 
   UserOutlined, 
   PlayCircleOutlined,
-  FireOutlined 
+  FireOutlined,
+  ThunderboltOutlined,
+  StarOutlined,
+  RocketOutlined,
+  CrownOutlined,
+  GiftOutlined,
+  ClockCircleOutlined,
+  ArrowRightOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -179,128 +186,264 @@ const Home: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Spin size="large" />
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="mb-6">
+            <div className="w-16 h-16 mx-auto bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center animate-pulse">
+              <RocketOutlined className="text-2xl text-white" />
+            </div>
+          </div>
+          <Spin size="large" />
+          <div className="mt-4">
+            <Text className="text-gray-600 text-lg">Đang tải dashboard...</Text>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+      {/* Hero Section với Background Pattern */}
+      <div className="relative bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 text-white py-20 overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-20 h-20 bg-white rounded-full"></div>
+          <div className="absolute top-32 right-20 w-16 h-16 bg-white rounded-full"></div>
+          <div className="absolute bottom-20 left-32 w-12 h-12 bg-white rounded-full"></div>
+          <div className="absolute bottom-32 right-10 w-24 h-24 bg-white rounded-full"></div>
+        </div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <Title level={1} className="text-white mb-4">
-              Chào mừng trở lại, {user?.email}!
-            </Title>
-            <Text className="text-xl text-primary-100">
-              Hãy tiếp tục hành trình học từ vựng của bạn
-            </Text>
+            <div className="flex items-center justify-center mb-6">
+              <Avatar 
+                size={80} 
+                className="bg-gradient-to-r from-yellow-400 to-orange-500 text-2xl font-bold mr-6"
+                icon={<UserOutlined />}
+              />
+              <div className="text-left">
+                <Title level={1} className="!text-white !mb-2 !text-4xl font-bold">
+                  Chào mừng trở lại!
+                </Title>
+                <Text className="text-purple-100 text-xl">
+                  {user?.email}
+                </Text>
+              </div>
+            </div>
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <StarOutlined className="text-yellow-400 text-2xl" />
+              <Text className="text-2xl text-purple-100 font-medium">
+                Hãy tiếp tục hành trình chinh phục từ vựng
+              </Text>
+              <StarOutlined className="text-yellow-400 text-2xl" />
+            </div>
+            <div className="flex items-center justify-center space-x-4 mt-6">
+              <div className="flex items-center bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                <FireOutlined className="text-orange-400 mr-2" />
+                <Text className="text-white font-medium">{currentStreak} ngày liên tiếp</Text>
+              </div>
+              <div className="flex items-center bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                <TrophyOutlined className="text-yellow-400 mr-2" />
+                <Text className="text-white font-medium">{completedTopics} chủ đề hoàn thành</Text>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Stats Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={6}>
-            <Card className="text-center">
+      {/* Enhanced Stats Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-10">
+        <div className="flex flex-wrap -mx-2">
+          <div className="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+            <div className="text-center rounded-xl border-0 shadow-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 p-6">
+              <div className="mb-4">
+                <div className="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center">
+                  <BookOutlined className="text-2xl text-white" />
+                </div>
+              </div>
               <Statistic
-                title="Chủ đề đã học"
+                title={<span className="text-blue-100 font-medium">Chủ đề đã học</span>}
                 value={completedTopics}
-                suffix={`/ ${totalTopics}`}
-                prefix={<BookOutlined className="text-primary-600" />}
+                suffix={<span className="text-blue-200">/ {totalTopics}</span>}
+                valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
               />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card className="text-center">
+            </div>
+          </div>
+          <div className="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+            <div className="text-center rounded-xl border-0 shadow-xl bg-gradient-to-br from-green-500 to-green-600 text-white hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 p-6">
+              <div className="mb-4">
+                <div className="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center">
+                  <UserOutlined className="text-2xl text-white" />
+                </div>
+              </div>
               <Statistic
-                title="Từ vựng đã học"
+                title={<span className="text-green-100 font-medium">Từ vựng đã học</span>}
                 value={learnedVocabulary}
-                suffix={`/ ${totalVocabulary}`}
-                prefix={<UserOutlined className="text-green-600" />}
+                suffix={<span className="text-green-200">/ {totalVocabulary}</span>}
+                valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
               />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card className="text-center">
+            </div>
+          </div>
+          <div className="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+            <div className="text-center rounded-xl border-0 shadow-xl bg-gradient-to-br from-yellow-500 to-orange-500 text-white hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 p-6">
+              <div className="mb-4">
+                <div className="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center">
+                  <TrophyOutlined className="text-2xl text-white" />
+                </div>
+              </div>
               <Statistic
-                title="Bài thi đã làm"
+                title={<span className="text-yellow-100 font-medium">Bài thi đã làm</span>}
                 value={passedExams}
-                suffix={`/ ${totalExams}`}
-                prefix={<TrophyOutlined className="text-yellow-600" />}
+                suffix={<span className="text-yellow-200">/ {totalExams}</span>}
+                valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
               />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card className="text-center">
+            </div>
+          </div>
+          <div className="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+            <div className="text-center rounded-xl border-0 shadow-xl bg-gradient-to-br from-red-500 to-pink-500 text-white hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 p-6">
+              <div className="mb-4">
+                <div className="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center">
+                  <FireOutlined className="text-2xl text-white" />
+                </div>
+              </div>
               <Statistic
-                title="Ngày liên tiếp"
+                title={<span className="text-red-100 font-medium">Ngày liên tiếp</span>}
                 value={currentStreak}
-                suffix="ngày"
-                prefix={<FireOutlined className="text-red-600" />}
+                suffix={<span className="text-red-200">ngày</span>}
+                valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
               />
-            </Card>
-          </Col>
-        </Row>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Row gutter={[24, 24]}>
-          {/* Quick Actions */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Row gutter={[32, 32]}>
+          {/* Enhanced Quick Actions */}
           <Col xs={24} lg={12}>
-            <Card title="Hành động nhanh" className="h-full">
+            <Card 
+              className="h-full border-0 shadow-xl bg-white/80 backdrop-blur-sm"
+              title={
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center mr-3">
+                    <ThunderboltOutlined className="text-white" />
+                  </div>
+                  <span className="text-xl font-bold text-gray-800">Hành động nhanh</span>
+                </div>
+              }
+            >
               <div className="space-y-4">
                 <Button 
-                  type="primary" 
+                  type="primary"
                   size="large" 
-                  icon={<PlayCircleOutlined />}
-                  className="w-full h-12 bg-primary-600 hover:bg-primary-700"
+                  icon={<RocketOutlined />}
+                  className="w-full h-14 text-lg font-medium border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                  style={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    borderRadius: '12px'
+                  }}
                   onClick={() => navigate('/topics')}
                 >
-                  Tiếp tục học
+                  <span className="flex items-center justify-between w-full">
+                    Tiếp tục học tập
+                    <ArrowRightOutlined />
+                  </span>
                 </Button>
+                
                 <Button 
                   size="large" 
-                  icon={<TrophyOutlined />}
-                  className="w-full h-12"
+                  icon={<CrownOutlined />}
+                  className="w-full h-14 text-lg font-medium border-2 border-yellow-400 text-yellow-600 hover:bg-yellow-50 hover:border-yellow-500 hover:text-yellow-700 transition-all duration-300"
+                  style={{ borderRadius: '12px' }}
                   onClick={handleQuickExam}
                 >
-                  Làm bài thi
+                  <span className="flex items-center justify-between w-full">
+                    Thử thách kiểm tra
+                    <ArrowRightOutlined />
+                  </span>
                 </Button>
+                
                 <Button 
                   size="large" 
-                  icon={<BookOutlined />}
-                  className="w-full h-12"
+                  icon={<GiftOutlined />}
+                  className="w-full h-14 text-lg font-medium border-2 border-green-400 text-green-600 hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition-all duration-300"
+                  style={{ borderRadius: '12px' }}
                   onClick={handleQuickVocab}
                 >
-                  Ôn tập từ vựng
+                  <span className="flex items-center justify-between w-full">
+                    Ôn tập từ vựng
+                    <ArrowRightOutlined />
+                  </span>
                 </Button>
               </div>
             </Card>
           </Col>
 
-          {/* Recent Progress */}
+          {/* Enhanced Recent Progress */}
           <Col xs={24} lg={12}>
-            <Card title="Tiến độ gần đây" className="h-full">
-              <div className="space-y-4">
+            <Card 
+              className="h-full border-0 shadow-xl bg-white/80 backdrop-blur-sm"
+              title={
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center mr-3">
+                    <ClockCircleOutlined className="text-white" />
+                  </div>
+                  <span className="text-xl font-bold text-gray-800">Tiến độ gần đây</span>
+                </div>
+              }
+            >
+              <div className="space-y-6">
                 {recentProgress.length === 0 ? (
-                  <Text className="text-gray-400">Chưa có tiến độ học nào gần đây.</Text>
-                ) : recentProgress.map((topic) => (
-                  <div key={topic.id} className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <Text className="font-medium">{topic.title}</Text>
+                  <div className="text-center py-8">
+                    <BookOutlined className="text-4xl text-gray-300 mb-4" />
+                    <Text className="text-gray-400 text-lg">Chưa có tiến độ học nào gần đây.</Text>
+                    <div className="mt-4">
+                      <Button 
+                        type="primary" 
+                        ghost 
+                        onClick={() => navigate('/topics')}
+                        className="border-blue-400 text-blue-600 hover:bg-blue-50"
+                      >
+                        Bắt đầu học ngay
+                      </Button>
+                    </div>
+                  </div>
+                ) : recentProgress.map((topic, index) => (
+                  <div key={topic.id} className="group">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center mr-3 text-white font-bold text-sm">
+                          {index + 1}
+                        </div>
+                        <Text className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                          {topic.title}
+                        </Text>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Text className="font-bold text-lg text-gray-700">{topic.progress}%</Text>
+                        {topic.progress === 100 && <CrownOutlined className="text-yellow-500" />}
+                      </div>
+                    </div>
+                    <div className="relative">
                       <Progress 
                         percent={topic.progress} 
-                        size="small" 
-                        strokeColor={topic.progress >= 80 ? '#10b981' : topic.progress >= 60 ? '#f59e0b' : topic.progress >= 40 ? '#3b82f6' : '#ef4444'}
+                        size="small"
+                        strokeColor={{
+                          '0%': topic.progress >= 80 ? '#10b981' : topic.progress >= 60 ? '#f59e0b' : topic.progress >= 40 ? '#3b82f6' : '#ef4444',
+                          '100%': topic.progress >= 80 ? '#059669' : topic.progress >= 60 ? '#d97706' : topic.progress >= 40 ? '#2563eb' : '#dc2626',
+                        }}
                         showInfo={false}
+                        className="group-hover:shadow-md transition-shadow"
                       />
+                      {topic.progress > 0 && (
+                        <div 
+                          className="absolute top-0 h-2 w-1 bg-white rounded-full shadow-md transition-all duration-300"
+                          style={{ left: `${Math.max(topic.progress - 1, 0)}%` }}
+                        />
+                      )}
                     </div>
-                    <Text className="text-gray-500 ml-4">{topic.progress}%</Text>
                   </div>
                 ))}
               </div>
@@ -308,35 +451,88 @@ const Home: React.FC = () => {
           </Col>
         </Row>
 
-        {/* Featured Topics */}
-        <div className="mt-8">
-          <Title level={3} className="mb-6">Chủ đề nổi bật</Title>
-          <Row gutter={[16, 16]}>
-            {recentProgress.map((topic) => (
-              <Col xs={24} sm={12} lg={6} key={topic.id}>
-                <Card 
-                  hoverable 
-                  className="text-center cursor-pointer"
-                  onClick={() => navigate(`/topics/${topic.id}`)}
-                >
-                  <div className="mb-4">
-                    <BookOutlined className="text-4xl text-primary-600" />
-                  </div>
-                  <Title level={4} className="mb-2">{topic.title}</Title>
-                  <Progress 
-                    percent={topic.progress} 
-                    strokeColor={topic.progress >= 80 ? '#10b981' : topic.progress >= 60 ? '#f59e0b' : topic.progress >= 40 ? '#3b82f6' : '#ef4444'}
-                    showInfo={false}
-                  />
-                  <Text className="text-gray-500">{topic.progress}% hoàn thành</Text>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        </div>
+        {/* Enhanced Featured Topics */}
+        {recentProgress.length > 0 && (
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center mr-4">
+                  <StarOutlined className="text-white text-xl" />
+                </div>
+                <Title level={2} className="!mb-0 !text-3xl font-bold text-gray-800">
+                  Chủ đề nổi bật
+                </Title>
+              </div>
+              <Button 
+                type="link" 
+                className="text-lg font-medium text-purple-600 hover:text-purple-700"
+                onClick={() => navigate('/topics')}
+              >
+                Xem tất cả <ArrowRightOutlined />
+              </Button>
+            </div>
+            <Row gutter={[24, 24]}>
+              {recentProgress.map((topic, index) => (
+                <Col xs={24} sm={12} lg={6} key={topic.id}>
+                  <Card 
+                    hoverable 
+                    className="text-center cursor-pointer border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white/90 backdrop-blur-sm overflow-hidden relative group"
+                    onClick={() => navigate(`/topics/${topic.id}`)}
+                    style={{ borderRadius: '20px' }}
+                  >
+                    {/* Ranking Badge */}
+                    <div className="absolute top-4 right-4 w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm z-10">
+                      {index + 1}
+                    </div>
+                    
+                    {/* Background Decoration */}
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-200 to-pink-200 rounded-full -translate-y-10 translate-x-10 opacity-30 group-hover:scale-150 transition-transform duration-500"></div>
+                    
+                    <div className="relative z-10 pt-4">
+                      <div className="mb-6">
+                        <div className="w-16 h-16 mx-auto bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          <BookOutlined className="text-2xl text-white" />
+                        </div>
+                        {topic.progress === 100 && (
+                          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 -translate-y-2">
+                            <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                              <CrownOutlined className="text-white text-sm" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <Title level={4} className="mb-4 font-bold text-gray-800 group-hover:text-purple-600 transition-colors">
+                        {topic.title}
+                      </Title>
+                      
+                      <div className="mb-4">
+                        <Progress 
+                          percent={topic.progress} 
+                          strokeColor={{
+                            '0%': topic.progress >= 80 ? '#10b981' : topic.progress >= 60 ? '#f59e0b' : topic.progress >= 40 ? '#3b82f6' : '#ef4444',
+                            '100%': topic.progress >= 80 ? '#059669' : topic.progress >= 60 ? '#d97706' : topic.progress >= 40 ? '#2563eb' : '#dc2626',
+                          }}
+                          showInfo={false}
+                          className="group-hover:shadow-md transition-shadow"
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-center space-x-2">
+                        <Text className="text-lg font-bold text-gray-700">{topic.progress}%</Text>
+                        <Text className="text-gray-500">hoàn thành</Text>
+                        {topic.progress >= 80 && <StarOutlined className="text-yellow-500" />}
+                      </div>
+                    </div>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default Home; 
+export default Home;

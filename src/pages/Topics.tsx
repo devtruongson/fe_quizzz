@@ -4,7 +4,9 @@ import {
   BookOutlined, 
   SearchOutlined, 
   PlayCircleOutlined,
-  TrophyOutlined 
+  TrophyOutlined,
+  ThunderboltOutlined,
+  StarOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -192,46 +194,112 @@ const Topics: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Spin size="large" />
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <Spin size="large" />
+          <div className="mt-4">
+            <Text className="text-gray-600">Đang tải chủ đề...</Text>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      {/* Header với gradient background */}
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 shadow-xl">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <Title level={2} className="mb-2">Chủ đề học tập</Title>
-              <Text className="text-gray-600">
-                Chọn chủ đề bạn muốn học
+            <div className="text-white">
+              <Title level={1} className="!text-white !mb-3 font-bold text-4xl">
+                <StarOutlined className="mr-3 text-yellow-400" />
+                Chủ đề học tập
+              </Title>
+              <Text className="text-indigo-100 text-lg">
+                Khám phá và chinh phục các chủ đề học tập thú vị
               </Text>
             </div>
-            <div className="mt-4 sm:mt-0">
-              <Search
-                placeholder="Tìm kiếm chủ đề..."
-                allowClear
-                enterButton={<SearchOutlined />}
-                size="large"
-                onSearch={handleSearch}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full sm:w-80"
-              />
+            <div className="mt-6 sm:mt-0">
+              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-1">
+                <Search
+                  placeholder="Tìm kiếm chủ đề..."
+                  allowClear
+                  enterButton={
+                    <Button 
+                      type="primary" 
+                      icon={<SearchOutlined />}
+                      className="bg-white text-indigo-600 border-none hover:bg-gray-50"
+                    >
+                      Tìm kiếm
+                    </Button>
+                  }
+                  size="large"
+                  onSearch={handleSearch}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full sm:w-96"
+                  style={{
+                    '& .ant-input': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      border: 'none',
+                      borderRadius: '12px'
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Summary */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="rounded-xl bg-gradient-to-r from-green-400 to-green-600 border-none text-white shadow-lg p-6 flex items-center">
+            <TrophyOutlined className="text-3xl mr-4" />
+            <div>
+              <Text className="!text-green-100 block">Hoàn thành</Text>
+              <Title level={3} className="!text-white !mb-0">
+                {topicProgress.filter(p => p.progress === 100).length}
+              </Title>
+            </div>
+          </div>
+          <div className="rounded-xl bg-gradient-to-r from-blue-400 to-blue-600 border-none text-white shadow-lg p-6 flex items-center">
+            <PlayCircleOutlined className="text-3xl mr-4" />
+            <div>
+              <Text className="!text-blue-100 block">Đang học</Text>
+              <Title level={3} className="!text-white !mb-0">
+                {topicProgress.filter(p => p.progress > 0 && p.progress < 100).length}
+              </Title>
+            </div>
+          </div>
+          <div className="rounded-xl bg-gradient-to-r from-purple-400 to-purple-600 border-none text-white shadow-lg p-6 flex items-center">
+            <BookOutlined className="text-3xl mr-4" />
+            <div>
+              <Text className="!text-purple-100 block">Tổng số</Text>
+              <Title level={3} className="!text-white !mb-0">
+                {topics.length}
+              </Title>
             </div>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {filteredTopics.length === 0 ? (
-          <Empty
-            description="Không tìm thấy chủ đề nào"
-            className="my-16"
-          />
+          <div className="text-center py-16">
+            <Empty
+              description={
+                <div>
+                  <Text className="text-gray-500 text-lg">Không tìm thấy chủ đề nào</Text>
+                  <br />
+                  <Text className="text-gray-400">Hãy thử tìm kiếm với từ khóa khác</Text>
+                </div>
+              }
+              className="my-16"
+            />
+          </div>
         ) : (
           <Row gutter={[24, 24]}>
             {filteredTopics.map((topic) => {
@@ -242,74 +310,129 @@ const Topics: React.FC = () => {
                 <Col xs={24} sm={12} lg={8} xl={6} key={topic.id}>
                   <Card
                     hoverable
-                    className="h-full cursor-pointer transition-all duration-200 hover:shadow-lg"
+                    className="h-full cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg group overflow-hidden relative"
                     onClick={() => navigate(`/topics/${topic.id}`)}
+                    style={{
+                      borderRadius: '20px',
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)'
+                    }}
                   >
-                    <div className="text-center">
-                      <div className="mb-4">
-                        <BookOutlined className="text-4xl text-primary-600" />
+                    {/* Decorative elements */}
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-indigo-200 to-purple-200 rounded-full -translate-y-10 translate-x-10 opacity-30 group-hover:scale-150 transition-transform duration-500"></div>
+                    <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-pink-200 to-orange-200 rounded-full translate-y-8 -translate-x-8 opacity-20 group-hover:scale-125 transition-transform duration-500"></div>
+                    
+                    <div className="text-center relative z-10">
+                      <div className="mb-6 relative">
+                        <div className="w-16 h-16 mx-auto bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          <BookOutlined className="text-2xl text-white" />
+                        </div>
+                        {isCompleted && (
+                          <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                            <TrophyOutlined className="text-white text-sm" />
+                          </div>
+                        )}
                       </div>
                       
-                      <Title level={4} className="mb-2 line-clamp-2">
+                      <Title level={4} className="mb-3 line-clamp-2 font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">
                         {topic.title}
                       </Title>
                       
                       {topic.description && (
-                        <Text className="text-gray-600 line-clamp-3 mb-4 block">
+                        <Text className="text-gray-600 line-clamp-3 mb-6 block leading-relaxed">
                           {topic.description}
                         </Text>
                       )}
                       
-                      <div className="mb-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <Text className="text-sm text-gray-500">Tiến độ</Text>
-                          <Text className="text-sm font-medium">{progressData.progress}%</Text>
+                      <div className="mb-6">
+                        <div className="flex items-center justify-between mb-3">
+                          <Text className="text-sm text-gray-500 font-medium">Tiến độ học tập</Text>
+                          <div className="flex items-center">
+                            <Text className="text-sm font-bold text-gray-700">{progressData.progress}%</Text>
+                            {progressData.progress > 0 && (
+                              <ThunderboltOutlined className="ml-1 text-yellow-500" />
+                            )}
+                          </div>
                         </div>
-                        <div 
-                          className="w-full bg-gray-200 rounded-full h-2"
-                          style={{ backgroundColor: '#e5e7eb' }}
-                        >
-                          <div
-                            className="h-2 rounded-full transition-all duration-300"
-                            style={{
-                              width: `${progressData.progress}%`,
-                              backgroundColor: getProgressColor(progressData.progress),
-                            }}
-                          />
+                        <div className="relative">
+                          <div className="w-[90%] mx-auto bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
+                            <div
+                              className="h-3 rounded-full transition-all duration-1000 ease-out shadow-sm"
+                              style={{
+                                width: `${progressData.progress}%`,
+                                background: `linear-gradient(90deg, ${getProgressColor(progressData.progress)}, ${getProgressColor(progressData.progress)}dd)`,
+                              }}
+                            />
+                          </div>
+                          {progressData.progress > 0 && (
+                            <div 
+                              className="absolute top-0 h-[13px] w-[13px] rounded-[50%] bg-[blue] shadow-lg transition-all duration-1000"
+                              style={{ left: `${Math.max(progressData.progress - 9, 0)}%` }}
+                            />
+                          )}
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between gap-2">
-                        {isCompleted ? (
-                          <Tag color="success" icon={<TrophyOutlined />}>
-                            Hoàn thành
-                          </Tag>
-                        ) : (
-                          <Tag color="processing" icon={<PlayCircleOutlined />}>
-                            {progressData.progress > 0 ? 'Đang học' : 'Chưa học'}
-                          </Tag>
-                        )}
+                      <div className="space-y-3">
+                        <div className="flex justify-center">
+                          {isCompleted ? (
+                            <Tag 
+                              color="success" 
+                              icon={<TrophyOutlined />}
+                              className="px-4 py-1 rounded-full text-sm font-medium border-0"
+                              style={{ background: 'linear-gradient(90deg, #10b981, #059669)', color: "#fff" }}
+                            >
+                              Hoàn thành xuất sắc
+                            </Tag>
+                          ) : (
+                            <Tag 
+                              color="processing" 
+                              icon={<PlayCircleOutlined />}
+                              className="px-4 py-1 rounded-full text-sm font-medium border-0"
+                              style={{ 
+                                background: progressData.progress > 0 
+                                  ? 'linear-gradient(90deg, #3b82f6, #2563eb)' 
+                                  : 'linear-gradient(90deg, #6b7280, #4b5563)',
+                                  color: "#fff"
+                              }}
+                            >
+                              {progressData.progress > 0 ? 'Đang tiến bộ' : 'Sẵn sàng học'}
+                            </Tag>
+                          )}
+                        </div>
+                        
                         <Button
-                          size="small"
-                          icon={<BookOutlined />}
-                          className="w-full h-[30px]"
+                          size="middle"
+                          className="w-full h-10 rounded-xl border-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300 font-medium transition-all duration-300"
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/topics/${topic.id}/flashcard`);
                           }}
                         >
+                          <PlayCircleOutlined className="mr-2" />
                           Ôn tập từ vựng
                         </Button>
-                      </div>
-                      <Button
-                          size="small"
+                        
+                        <Button
+                          size="middle"
                           type="primary"
                           loading={creatingExamId === topic.id}
-                          className="w-full h-[30px] mt-[10px]"
+                          className="w-full h-10 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                          style={{
+                            background: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+                            border: 'none'
+                          }}
                           onClick={(e) => handleCreateExam(topic, e)}
                         >
-                          Kiểm tra
+                          {creatingExamId === topic.id ? (
+                            <>Đang tạo bài kiểm tra...</>
+                          ) : (
+                            <>
+                              <ThunderboltOutlined className="mr-2" />
+                              Kiểm tra năng lực
+                            </>
+                          )}
                         </Button>
+                      </div>
                     </div>
                   </Card>
                 </Col>
@@ -322,4 +445,4 @@ const Topics: React.FC = () => {
   );
 };
 
-export default Topics; 
+export default Topics;

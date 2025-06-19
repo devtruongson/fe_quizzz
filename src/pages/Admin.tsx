@@ -32,6 +32,8 @@ import {
 import type { User, Topic, Vocabulaire, VocabulaireQuestion } from '../types';
 import { usersAPI, topicsAPI, vocabulairesAPI, vocabulaireQuestionsAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import AdminVocabulary from './AdminVocabulary';
+import AdminExams from './AdminExams';
 
 const { Sider, Content } = Layout;
 const { Title, Text } = Typography;
@@ -179,12 +181,22 @@ const Admin: React.FC = () => {
     {
       key: 'topics',
       icon: <BookOutlined />,
-      label: 'Quản lý chủ đề',
+      label: 'Quản lý tất cả chủ đề',
     },
     {
       key: 'vocabulary',
       icon: <FileTextOutlined />,
-      label: 'Quản lý từ vựng',
+      label: 'Quản lý tất cả từ vựng',
+    },
+    {
+      key: 'exam',
+      icon: <TrophyOutlined />,
+      label: 'Quản lý tất cả bài kiểm tra',
+    },
+    {
+      key: 'vocabulary_follow_topic',
+      icon: <FileTextOutlined />,
+      label: 'Quản lý tất cả từ vựng theo chủ đề',
     },
   ];
 
@@ -385,8 +397,10 @@ const Admin: React.FC = () => {
               <div className="flex justify-between items-center mb-6">
                 <Title level={2}>
                   {selectedMenu === 'users' && 'Quản lý người dùng'}
-                  {selectedMenu === 'topics' && 'Quản lý chủ đề'}
-                  {selectedMenu === 'vocabulary' && 'Quản lý từ vựng'}
+                  {selectedMenu === 'topics' && 'Quản lý tất cả chủ đề'}
+                  {selectedMenu === 'vocabulary' && 'Quản lý tất cả từ vựng'}
+                  {selectedMenu === 'exam' && 'Quản lý tất cả bài kiểm tra'}
+                  {selectedMenu === 'vocabulary_follow_topic' && 'Quản lý tất cả từ vựng theo chủ đề'}
                 </Title>
                 <Button
                   type="primary"
@@ -399,17 +413,23 @@ const Admin: React.FC = () => {
               </div>
               
               <Card>
-                <Table
-                  columns={getColumns()}
-                  dataSource={getData() as any}
-                  loading={loading}
-                  rowKey="id"
-                  pagination={{
-                    pageSize: 10,
-                    showSizeChanger: true,
-                    showQuickJumper: true,
-                  }}
-                />
+                {selectedMenu === "user" || selectedMenu === "topics" || selectedMenu === "vocabulary" ? (
+                   <Table
+                   columns={getColumns()}
+                   dataSource={getData() as any}
+                   loading={loading}
+                   rowKey="id"
+                   pagination={{
+                     pageSize: 10,
+                     showSizeChanger: true,
+                     showQuickJumper: true,
+                   }}
+                 />
+                ) : (
+                  selectedMenu === "vocabulary_follow_topic" ? (
+                    <AdminVocabulary />
+                  ) : <AdminExams />
+                )}
               </Card>
             </div>
           )}

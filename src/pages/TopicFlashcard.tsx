@@ -101,12 +101,9 @@ const TopicFlashcard: React.FC = () => {
     if (!user || cards.length === 0) return;
     
     try {
-      console.log('Loading current progress for user:', user.id, 'topic:', topicId);
       const userProgress = await userVocabulairesAPI.getByUserId(user.id);
-      console.log('User progress:', userProgress);
+      console.log("userProgress", userProgress);
       
-      // Tìm progress cho topic này (nếu có)
-      // Sẽ tìm progress có vocabulaireQuestionListId chứa card của topic này
       const topicProgress = userProgress.find(p => {
         try {
           const cardIds = JSON.parse(p.vocabulaireQuestionListId || '[]');
@@ -119,17 +116,13 @@ const TopicFlashcard: React.FC = () => {
       });
       
       setCurrentProgress(topicProgress || null);
-      console.log('Found topic progress:', topicProgress);
       
       if (topicProgress) {
-        // Nếu đã có progress, load lại tiến độ cũ
         try {
           const studiedCardIds = JSON.parse(topicProgress.vocabulaireQuestionListId || '[]');
           setStudiedCards(new Set(studiedCardIds));
-          console.log('Loaded studied cards:', studiedCardIds);
-          
-          // Check nếu đã hoàn thành 100%
           const progressPercent = Math.round((studiedCardIds.length / cards.length) * 100);
+
           if (progressPercent === 100) {
             setIsCompleted(true);
             setIsCallAPI(false);
@@ -152,14 +145,12 @@ const TopicFlashcard: React.FC = () => {
         vocabulaireQuestionsAPI.getAll()
       ]);
       setTopic(topicData);
-      // Lọc các vocabulaire thuộc topic này
       const topicVocabs = vocabulaires.filter((v: Vocabulaire) => v.topicId === Number(topicId));
       const vocabIds = topicVocabs.map((v: Vocabulaire) => v.id);
       const topicQuestions = questions.filter((q: VocabulaireQuestion) => vocabIds.includes(q.vocabulaireId));
       setCards(shuffle(topicQuestions));
       setCurrent(0);
       setFlipped(false);
-      // Không reset studiedCards ở đây, sẽ được load từ progress
     } catch (error) {
       message.error('Lỗi khi tải dữ liệu chủ đề hoặc từ vựng');
     } finally {
@@ -268,17 +259,8 @@ const TopicFlashcard: React.FC = () => {
     }
 
     try {
-      console.log('Starting to save progress...');
-      console.log('Studied cards:', Array.from(studiedCards));
-      console.log('Total cards:', cards.length);
-      
       const progressPercent = Math.round((studiedCards.size / cards.length) * 100);
       const status = progressPercent === 100 ? 'completed' : progressPercent > 0 ? 'doing' : 'start';
-      
-      console.log('Progress percent:', progressPercent);
-      console.log('Status:', status);
-      
-      // Lưu tiến độ tổng hợp cho topic
       const progressData = {
         userId: user.id,
         vocabulaireId: cards[0]?.vocabulaireId || 1, // Dùng vocabulaire đầu tiên làm representative
@@ -294,10 +276,7 @@ const TopicFlashcard: React.FC = () => {
         console.log('Updated progress:', updatedProgress);
         setCurrentProgress(updatedProgress);
       } else {
-        // Tạo tiến độ mới
-        console.log('Creating new progress record');
         const newProgress = await userVocabulairesAPI.create(progressData as any);
-        console.log('Created progress:', newProgress);
         setCurrentProgress(newProgress);
       }
 
@@ -692,6 +671,8 @@ const TopicFlashcard: React.FC = () => {
       </div>
     );
   }
+
+  console.log("currentProgress", currentProgress);
 
   return (
     <div style={cardStyles.container}>
